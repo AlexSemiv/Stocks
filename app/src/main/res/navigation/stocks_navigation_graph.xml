@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/stocks_navigation_graph"
+    app:startDestination="@id/topStocksFragment">
+
+    <fragment
+        android:id="@+id/topStocksFragment"
+        android:name="com.example.stocks.ui.fragments.TopStocksFragment"
+        android:label="TopStocksFragment" >
+        <action
+            android:id="@+id/action_topStocksFragment_to_informationStockFragment"
+            app:destination="@id/informationStockFragment"
+
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/savedStocksFragment"
+        android:name="com.example.stocks.ui.fragments.SavedStocksFragment"
+        android:label="SavedStocksFragment" >
+        <action
+            android:id="@+id/action_savedStocksFragment_to_informationStockFragment"
+            app:destination="@id/informationStockFragment"
+
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchStocksFragment"
+        android:name="com.example.stocks.ui.fragments.SearchStocksFragment"
+        android:label="SearchStocksFragment" >
+        <action
+            android:id="@+id/action_searchStocksFragment_to_informationStockFragment"
+            app:destination="@id/informationStockFragment"
+
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/informationStockFragment"
+        android:name="com.example.stocks.ui.fragments.InformationStockFragment"
+        android:label="InformationStockFragment" >
+        <argument
+            android:name="stock"
+            app:argType="com.example.stocks.db.Stock" />
+    </fragment>
+</navigation>
