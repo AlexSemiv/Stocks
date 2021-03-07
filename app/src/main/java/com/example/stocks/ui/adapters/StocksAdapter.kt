@@ -58,24 +58,11 @@ class StocksAdapter : RecyclerView.Adapter<StocksAdapter.StockViewHolder>() {
                 it(stock)
             }
         }
-
-        holder.itemView.float_button.apply {
-            setOnClickListener {
-                onFloatingActionButtonClickListener?.let {
-                    it(stock)
-                }
-            }
-        }
     }
 
     private var onItemClickListener: ((Stock) -> Unit)? = null
     fun setOnItemCLickListener(listener: (Stock) -> Unit){
         onItemClickListener = listener
-    }
-
-    private var onFloatingActionButtonClickListener: ((Stock) -> Unit)? = null
-    fun setOnFloatingActionButtonClickListener(listener: (Stock) -> Unit){
-        onFloatingActionButtonClickListener = listener
     }
 }
 

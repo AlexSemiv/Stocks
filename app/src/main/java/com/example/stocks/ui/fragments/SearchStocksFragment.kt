@@ -22,10 +22,10 @@ class SearchStocksFragment(
 
         showEditText()
 
-        stocksAdapter.setOnFloatingActionButtonClickListener { stock ->
+        /*stocksAdapter.setOnFloatingActionButtonClickListener { stock ->
             viewModel.saveStockToSavedFragment(stock)
             Snackbar.make(view,"Stock was successfully saved", Snackbar.LENGTH_SHORT).show()
-        }
+        }*/
 
         var searchJob: Job? = null
         edit_text.addTextChangedListener {

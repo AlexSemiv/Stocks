@@ -25,8 +25,6 @@ abstract class StockFragment(
 
     abstract fun getLiveData(): LiveData<Resource<List<Stock>>>
 
-    //abstract fun getNavGraphAction(): Int
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -59,7 +57,7 @@ abstract class StockFragment(
                 }
                 is Resource.Error -> {
                     hideProgressBar()
-                    response.message?.let { message ->
+                    response.error?.let { message ->
                         Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
                     }
                 }

@@ -13,10 +13,10 @@ class TopStocksFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        stocksAdapter.setOnFloatingActionButtonClickListener { stock ->
+        /*stocksAdapter.setOnFloatingActionButtonClickListener { stock ->
             viewModel.saveStockToSavedFragment(stock)
             Snackbar.make(view, "Stock was successfully saved", Snackbar.LENGTH_SHORT).show()
-        }
+        }*/
     }
 
 }

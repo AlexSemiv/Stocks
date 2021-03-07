@@ -18,6 +18,12 @@ class StocksRepository(
     suspend fun getQuote(symbol: String) =
             RetrofitInstance.api.getQuote(symbol)
 
+    suspend fun getCompanyNews(symbol: String, from: String, to: String) =
+            RetrofitInstance.api.getCompanyNews(symbol,from,to)
+
+    suspend fun getCandle(symbol: String, resolution: String, from: String, to: String) =
+            RetrofitInstance.api.getCandle(symbol, resolution, from, to)
+
     // local database
     suspend fun insertStock(stock: Stock) =
             db.getStockDao().insertStock(stock)

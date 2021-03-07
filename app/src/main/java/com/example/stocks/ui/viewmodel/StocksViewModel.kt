@@ -7,17 +7,32 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkCapabilities.*
 import android.os.Build
-import androidx.lifecycle.*
+import android.widget.Toast
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.stocks.StockApplication
 import com.example.stocks.db.Stock
 import com.example.stocks.repository.StocksRepository
 import com.example.stocks.response.DowJonesResponse
+import com.example.stocks.response.ErrorResponse
+import com.example.stocks.response.news.CompanyNewsResponse
 import com.example.stocks.response.search.SearchResponse
-import com.example.stocks.util.Utils.Companion.DOW_JONES
 import com.example.stocks.util.Resource
+import com.example.stocks.util.Utils.Companion.CANDLE_FROM
+import com.example.stocks.util.Utils.Companion.CANDLE_RESOLUTION
+import com.example.stocks.util.Utils.Companion.CANDLE_TO
+import com.example.stocks.util.Utils.Companion.DOW_JONES
+import com.example.stocks.util.Utils.Companion.NEWS_FROM
+import com.example.stocks.util.Utils.Companion.NEWS_TO
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
+import okhttp3.ResponseBody
+import org.json.JSONObject
 import retrofit2.Response
 import java.io.IOException
+
 
 class StocksViewModel(
         application: Application,
@@ -31,6 +46,10 @@ class StocksViewModel(
         getTopStocks(DOW_JONES)
         updateSavedStocks()
     }
+
+    /*TODO("обработать все возможные ошибки которые может вернуть запрос" +
+    "разобраться с поиском(исправить его поведение мб добавить кнопку)" +
+    "добавить еще графики для остальных данных и подправить внещний вид графика и новостей")*/
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
@@ -97,7 +116,6 @@ class StocksViewModel(
                 }
             }else{
                 postValue(Resource.Error("No internet connection"))
-                TODO("get last request from db for TOP-10 if don't have an internet")
             }
 
             postValue(Resource.Success(list))
@@ -128,11 +146,13 @@ class StocksViewModel(
                 val lastSavedStocks = repository.getAllSavedStocks()
                 list.addAll(lastSavedStocks)
             }
-            //if(list.isNotEmpty()) {
-                postValue(Resource.Success(list))
+
+            postValue(Resource.Success(list))
+
+            if(list.isNotEmpty()) {
                 repository.deleteAllStock()
                 repository.insertAllStocks(list)
-            //}
+            }
         } catch (t: Throwable) {
             when(t){
                 is IOException -> postValue(Resource.Error("Network Failure"))
@@ -155,27 +175,52 @@ class StocksViewModel(
                         val resultQuoteResponse = repository.getQuote(item)
                         handleResponse(resultQuoteResponse)
                     }
+                    val newsResponse = async {
+                        val resultNews = repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
+                        handleResponse(resultNews)
+                    }
+                    val candleResponse = async {
+                        val resultCandle = repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
+                        handleResponse(resultCandle)
+                    }
 
                     val companyProfile2 = companyProfile2Response.await().data
                     val quote = quoteResponse.await().data
+                    val news = newsResponse.await().data
+                    val candle = candleResponse.await().data
 
-                    if (companyProfile2?.ticker != "" &&
-                            companyProfile2 != null && quote != null) {
-                        add(Stock(companyProfile2, quote))
+                    if (companyProfile2 != null && quote != null && news != null && candle != null) {
+                        add(Stock(companyProfile2, quote, news, candle))
                     }
                 }
             }.awaitAll()
         }
     }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
     private fun <T> handleResponse(response: Response<T>): Resource<T>{
         if(response.isSuccessful){
             response.body()?.let { result ->
-                return Resource.Success(result)
+                return when(response.code()){
+                    200 -> Resource.Success(result)
+                    else ->  Resource.Error("unknown code (successful)")
+                }
+            }
+        }else{
+            return when(response.code()) {
+                //403 -> Resource.Error(handleErrorResponseToGson(response.errorBody()))
+                429 -> Resource.Error(handleErrorResponseToGson(response.errorBody()))
+                else -> Resource.Error("unknown code (unsuccessful)")
             }
         }
-        return Resource.Error(response.message())
+        return Resource.Error("handle response error")
     }
+
+    private fun handleErrorResponseToGson(errorBody: ResponseBody?): String {
+        val type = object :TypeToken<ResponseBody>() {}.type
+        return Gson().toJson(errorBody,type)
+    }
+/////////////////////////////////////////////////////////////////////////////////////////////
 
     @Suppress("DEPRECATION")
     private fun hasInternetConnection(): Boolean {

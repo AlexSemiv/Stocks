@@ -50,5 +50,21 @@
         <argument
             android:name="stock"
             app:argType="com.example.stocks.db.Stock" />
+        <action
+            android:id="@+id/action_informationStockFragment_to_newsFragment"
+            app:destination="@id/newsFragment"
+
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+    <fragment
+        android:id="@+id/newsFragment"
+        android:name="com.example.stocks.ui.fragments.NewsFragment"
+        android:label="NewsFragment" >
+        <argument
+            android:name="url"
+            app:argType="string" />
     </fragment>
 </navigation>
