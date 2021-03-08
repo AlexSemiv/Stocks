@@ -15,6 +15,7 @@ import com.example.stocks.ui.StocksActivity
 import com.example.stocks.ui.viewmodel.StocksViewModel
 import com.example.stocks.ui.adapters.StocksAdapter
 import com.example.stocks.util.Resource
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stocks.*
 
 abstract class StockFragment(
@@ -58,7 +59,7 @@ abstract class StockFragment(
                 is Resource.Error -> {
                     hideProgressBar()
                     response.error?.let { message ->
-                        Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
+                        Snackbar.make(view,message,Snackbar.LENGTH_SHORT).show()
                     }
                 }
                 is Resource.Loading -> {

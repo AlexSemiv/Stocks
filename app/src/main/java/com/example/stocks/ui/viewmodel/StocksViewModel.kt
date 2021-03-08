@@ -7,17 +7,12 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkCapabilities.*
 import android.os.Build
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.stocks.StockApplication
 import com.example.stocks.db.Stock
 import com.example.stocks.repository.StocksRepository
-import com.example.stocks.response.DowJonesResponse
-import com.example.stocks.response.ErrorResponse
-import com.example.stocks.response.news.CompanyNewsResponse
-import com.example.stocks.response.search.SearchResponse
 import com.example.stocks.util.Resource
 import com.example.stocks.util.Utils.Companion.CANDLE_FROM
 import com.example.stocks.util.Utils.Companion.CANDLE_RESOLUTION
@@ -25,13 +20,9 @@ import com.example.stocks.util.Utils.Companion.CANDLE_TO
 import com.example.stocks.util.Utils.Companion.DOW_JONES
 import com.example.stocks.util.Utils.Companion.NEWS_FROM
 import com.example.stocks.util.Utils.Companion.NEWS_TO
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
-import okhttp3.ResponseBody
-import org.json.JSONObject
-import retrofit2.Response
 import java.io.IOException
+import java.lang.Exception
 
 
 class StocksViewModel(
@@ -53,20 +44,22 @@ class StocksViewModel(
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
-        topStocksLiveData.initResponseLiveData{
-            repository.getTopStocksTickers(symbol)
+        topStocksLiveData.initLiveData {
+            repository.getTopStocksTickers(symbol).constituents
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
-        searchStocksLiveData.initResponseLiveData{
-            repository.searchStock(query)
+        searchStocksLiveData.initLiveData {
+            repository.searchStock(query).result.map { it.symbol }
         }
     }
 
     // local database
     private fun updateSavedStocks() = viewModelScope.launch {
-        savedStocksLiveData.initSavedStocksLiveData()
+        savedStocksLiveData.initSavedLiveData {
+            repository.getTickersOfSavedStocks()
+        }
     }
 
     fun saveStockToSavedFragment(stock: Stock) = viewModelScope.launch {
@@ -82,67 +75,48 @@ class StocksViewModel(
     }
 
     // utils
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initResponseLiveData(
-            response: suspend () -> Response<*>
-    ) = with(this) {
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
             val list = mutableListOf<Stock>()
 
             if (hasInternetConnection()) {
-                val result = when(
-                        val handle = handleResponse(response()).data
-                    ){
-                    is DowJonesResponse -> {
-                        handle.constituents.subList(0,10)
-                    }
-                    is SearchResponse -> {
-                        handle.result.map { it.symbol }.subList(0,10)
-                    }
-                    else -> {
-                        listOf()
-                    }
-                }
+                val tickers = getTickers()
                 try {
-                    coroutineScope {
-                        if(result.isNotEmpty()) {
-                            list.initStockList(result)
-                        }else{
-                            postValue(Resource.Error("initStockLiveData error"))
-                        }
+                    if (tickers.isNotEmpty()) {
+                        list.initStockList(tickers)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception){
                     postValue(Resource.Error(e.message.toString()))
                 }
-            }else{
-                postValue(Resource.Error("No internet connection"))
+            } else {
+                postValue(Resource.Error("no internet"))
+                return
             }
 
             postValue(Resource.Success(list))
-        } catch (t: Throwable) {
-            when(t){
+        } catch (e: Throwable) {
+            when(e){
                 is IOException -> postValue(Resource.Error("Network Failure"))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedStocksLiveData(
-    ) = with(this){
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
             val list = mutableListOf<Stock>()
-
             if (hasInternetConnection()) {
-                val savedTickers = repository.getTickersOfSavedStocks()
+                val tickers = getSavedTickers()
                 try {
-                    if(savedTickers.isNotEmpty()) {
-                        list.initStockList(savedTickers)
+                    if (tickers.isNotEmpty()) {
+                        list.initStockList(tickers)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception){
                     postValue(Resource.Error(e.message.toString()))
                 }
-            }else{
+            } else {
                 val lastSavedStocks = repository.getAllSavedStocks()
                 list.addAll(lastSavedStocks)
             }
@@ -150,77 +124,40 @@ class StocksViewModel(
             postValue(Resource.Success(list))
 
             if(list.isNotEmpty()) {
-                repository.deleteAllStock()
+                repository.deleteAllSavedStocks()
                 repository.insertAllStocks(list)
             }
-        } catch (t: Throwable) {
-            when(t){
+        } catch (e: Throwable) {
+            when(e){
                 is IOException -> postValue(Resource.Error("Network Failure"))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun MutableList<Stock>.initStockList(
-            list: List<String>
-    ) = with(this) {
-        coroutineScope {
-            list.map { item ->
-                async(Dispatchers.IO) {
+    private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
+        val uiScope = CoroutineScope(SupervisorJob())
+        list.map { item ->
+                uiScope.async {
                     val companyProfile2Response = async {
-                        val resultProfile2Response = repository.getCompanyProfile2(item)
-                        handleResponse(resultProfile2Response)
+                        repository.getCompanyProfile2(item)
                     }
                     val quoteResponse = async {
-                        val resultQuoteResponse = repository.getQuote(item)
-                        handleResponse(resultQuoteResponse)
+                        repository.getQuote(item)
                     }
                     val newsResponse = async {
-                        val resultNews = repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
-                        handleResponse(resultNews)
+                        repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
                     }
                     val candleResponse = async {
-                        val resultCandle = repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
-                        handleResponse(resultCandle)
+                        repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
                     }
-
-                    val companyProfile2 = companyProfile2Response.await().data
-                    val quote = quoteResponse.await().data
-                    val news = newsResponse.await().data
-                    val candle = candleResponse.await().data
-
-                    if (companyProfile2 != null && quote != null && news != null && candle != null) {
-                        add(Stock(companyProfile2, quote, news, candle))
-                    }
+                    add(Stock(companyProfile2Response.await(),
+                            quoteResponse.await(),
+                            newsResponse.await(),
+                            candleResponse.await()))
                 }
             }.awaitAll()
         }
-    }
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-    private fun <T> handleResponse(response: Response<T>): Resource<T>{
-        if(response.isSuccessful){
-            response.body()?.let { result ->
-                return when(response.code()){
-                    200 -> Resource.Success(result)
-                    else ->  Resource.Error("unknown code (successful)")
-                }
-            }
-        }else{
-            return when(response.code()) {
-                //403 -> Resource.Error(handleErrorResponseToGson(response.errorBody()))
-                429 -> Resource.Error(handleErrorResponseToGson(response.errorBody()))
-                else -> Resource.Error("unknown code (unsuccessful)")
-            }
-        }
-        return Resource.Error("handle response error")
-    }
-
-    private fun handleErrorResponseToGson(errorBody: ResponseBody?): String {
-        val type = object :TypeToken<ResponseBody>() {}.type
-        return Gson().toJson(errorBody,type)
-    }
-/////////////////////////////////////////////////////////////////////////////////////////////
 
     @Suppress("DEPRECATION")
     private fun hasInternetConnection(): Boolean {

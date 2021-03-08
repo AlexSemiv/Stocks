@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.fragment_stocks.*
 
 
 class SavedStocksFragment(
-
 ) : StockFragment(R.id.action_savedStocksFragment_to_informationStockFragment) {
     override fun getLiveData() = viewModel.savedStocksLiveData
 

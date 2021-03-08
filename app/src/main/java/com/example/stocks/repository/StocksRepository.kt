@@ -1,28 +1,43 @@
 package com.example.stocks.repository
 
+import com.example.stocks.api.SafeApiRequest
 import com.example.stocks.db.SavedStockDatabase
 import com.example.stocks.db.Stock
 import com.example.stocks.response.RetrofitInstance
 
 class StocksRepository(
         val db: SavedStockDatabase
-) {
+): SafeApiRequest() {
     // retrofit
     suspend fun getTopStocksTickers(symbol: String) =
-            RetrofitInstance.api.getTopStocksTickers(symbol)
+            apiRequest {
+                RetrofitInstance.api.getTopStocksTickers(symbol)
+            }
+
     suspend fun searchStock(query: String) =
-            RetrofitInstance.api.searchStock(query)
+            apiRequest {
+                RetrofitInstance.api.searchStock(query)
+            }
 
     suspend fun getCompanyProfile2(symbol: String) =
-            RetrofitInstance.api.getCompanyProfile2(symbol)
+            apiRequest {
+                RetrofitInstance.api.getCompanyProfile2(symbol)
+            }
+
     suspend fun getQuote(symbol: String) =
-            RetrofitInstance.api.getQuote(symbol)
+            apiRequest {
+                RetrofitInstance.api.getQuote(symbol)
+            }
 
     suspend fun getCompanyNews(symbol: String, from: String, to: String) =
-            RetrofitInstance.api.getCompanyNews(symbol,from,to)
+            apiRequest {
+                RetrofitInstance.api.getCompanyNews(symbol, from, to)
+            }
 
     suspend fun getCandle(symbol: String, resolution: String, from: String, to: String) =
-            RetrofitInstance.api.getCandle(symbol, resolution, from, to)
+            apiRequest {
+                RetrofitInstance.api.getCandle(symbol, resolution, from, to)
+            }
 
     // local database
     suspend fun insertStock(stock: Stock) =
@@ -31,17 +46,17 @@ class StocksRepository(
     suspend fun deleteStock(stock: Stock) =
             db.getStockDao().deleteStock(stock)
 
-    suspend fun getTickersOfSavedStocks() =
-            db.getStockDao().getTickersOfSavedStocks()
-
-    suspend fun deleteAllStock() =
-            db.getStockDao().deleteAllStock()
-
-    suspend fun insertAllStocks(list: List<Stock>) {
+    suspend fun insertAllStocks(list: List<Stock>) =
         list.forEach { stock ->
             db.getStockDao().insertStock(stock)
         }
-    }
+
+    suspend fun getTickersOfSavedStocks() =
+                db.getStockDao().getTickersOfSavedStocks()
+
+    suspend fun deleteAllSavedStocks() =
+                db.getStockDao().deleteAllSavedStocks()
+
     suspend fun getAllSavedStocks() =
-            db.getStockDao().getAllSavedStocks()
+                db.getStockDao().getAllSavedStocks()
 }

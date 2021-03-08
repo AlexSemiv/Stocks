@@ -11,11 +11,12 @@ interface StockDao {
     @Delete
     suspend fun deleteStock(stock: Stock)
 
+    // saved stocks
     @Query("SELECT ticker FROM stocks")
     suspend fun getTickersOfSavedStocks(): List<String>
 
     @Query("DELETE FROM stocks")
-    suspend fun deleteAllStock()
+    suspend fun deleteAllSavedStocks()
 
     @Query("SELECT * FROM stocks")
     suspend fun getAllSavedStocks() : List<Stock>
