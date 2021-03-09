@@ -7,10 +7,7 @@ import com.example.stocks.R
 import com.example.stocks.util.Utils.Companion.SEARCHING_TIME_DELAY
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stocks.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class SearchStocksFragment(
 
@@ -22,20 +19,17 @@ class SearchStocksFragment(
 
         showEditText()
 
-        /*stocksAdapter.setOnFloatingActionButtonClickListener { stock ->
-            viewModel.saveStockToSavedFragment(stock)
-            Snackbar.make(view,"Stock was successfully saved", Snackbar.LENGTH_SHORT).show()
-        }*/
-
         var searchJob: Job? = null
         edit_text.addTextChangedListener {
             searchJob?.cancel()
             searchJob = MainScope().launch {
                 delay(SEARCHING_TIME_DELAY)
                 it?.let {
-                    val query = it.toString()
-                    if(query.isNotEmpty()){
-                        viewModel.searchStocks(query)
+                    val searchQuery = it.toString()
+                    if(searchQuery.isNotEmpty()){
+                        viewModel.searchStocks(searchQuery)
+                    } else {
+                        Snackbar.make(view, "Input some symbols or name of company", Snackbar.LENGTH_SHORT).show()
                     }
                 }
             }

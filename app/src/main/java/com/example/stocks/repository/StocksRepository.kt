@@ -52,11 +52,11 @@ class StocksRepository(
         }
 
     suspend fun getTickersOfSavedStocks() =
-                db.getStockDao().getTickersOfSavedStocks()
+            db.getStockDao().getTickersOfSavedStocks()
 
     suspend fun deleteAllSavedStocks() =
-                db.getStockDao().deleteAllSavedStocks()
+            db.getStockDao().deleteAllSavedStocks()
 
     suspend fun getAllSavedStocks() =
-                db.getStockDao().getAllSavedStocks()
+            db.getStockDao().getAllSavedStocks()
 }

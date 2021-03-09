@@ -1,6 +1,9 @@
 package com.example.stocks.ui.fragments
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import com.example.stocks.R
 import com.google.android.material.snackbar.Snackbar

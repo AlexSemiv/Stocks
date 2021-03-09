@@ -10,8 +10,12 @@ class Utils {
         const val BASE_URL = "https://finnhub.io/api/v1/"
         const val API_TOKEN = "c0l6e0f48v6orbr0rekg"
         const val DOW_JONES = "^DJI"
-        const val SEARCHING_TIME_DELAY = 2000L
+        const val SEARCHING_TIME_DELAY = 3000L
         const val CANDLE_RESOLUTION = "M"
+
+        const val SUCCESS_200 = 200
+        const val UNSUCCESS_429 = 429
+        const val UNSUCCESS_403 = 403
 
         val NEWS_FROM by lazy {
             getDateForCompanyNews().first

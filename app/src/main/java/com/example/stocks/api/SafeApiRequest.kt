@@ -1,32 +1,28 @@
 package com.example.stocks.api
 
-import com.example.stocks.util.ApiException
-import com.example.stocks.util.Resource
-import org.json.JSONException
-import org.json.JSONObject
+import com.example.stocks.util.ApiAccessException
+import com.example.stocks.util.ApiLimitException
+import com.example.stocks.util.OtherApiException
+import com.example.stocks.util.Utils.Companion.SUCCESS_200
+import com.example.stocks.util.Utils.Companion.UNSUCCESS_403
+import com.example.stocks.util.Utils.Companion.UNSUCCESS_429
 import retrofit2.Response
-import java.lang.StringBuilder
 
 abstract class SafeApiRequest {
     suspend fun <T> apiRequest(call: suspend () -> Response<T>): T {
         val response = call.invoke()
 
-        if(response.isSuccessful){
-            return  response.body()!!
-        } else {
-            val errorBody = response.errorBody()?.string()
-            val message = StringBuilder()
-            errorBody?.let { errorBody ->
-                try {
-                    message.append(JSONObject(errorBody).getString("error"))
-                } catch (e: JSONException){
-                    message.append("Unknown error")
-                }
-                message.append("\n")
+        return if(response.isSuccessful){
+            when(response.code()){
+                SUCCESS_200 -> response.body()!!
+                else -> throw OtherApiException("API received unknown SUCCESSFUL response code")
             }
-            message.append("Error code: ${response.code()}")
-
-            throw ApiException(message.toString())
+        } else {
+            when(response.code()){
+                UNSUCCESS_429 -> throw ApiLimitException("API limit reached. Please try again later. Remaining Limit: 0")
+                UNSUCCESS_403 -> throw ApiAccessException("Api access exception.")
+                else -> throw OtherApiException("API received unknown UNSUCCESSFUL response code")
+            }
         }
     }
 }

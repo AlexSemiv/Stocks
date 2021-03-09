@@ -7,12 +7,16 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkCapabilities.*
 import android.os.Build
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.stocks.StockApplication
 import com.example.stocks.db.Stock
 import com.example.stocks.repository.StocksRepository
+import com.example.stocks.util.ApiAccessException
+import com.example.stocks.util.ApiLimitException
+import com.example.stocks.util.OtherApiException
 import com.example.stocks.util.Resource
 import com.example.stocks.util.Utils.Companion.CANDLE_FROM
 import com.example.stocks.util.Utils.Companion.CANDLE_RESOLUTION
@@ -23,35 +27,39 @@ import com.example.stocks.util.Utils.Companion.NEWS_TO
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.lang.Exception
+import java.util.concurrent.ConcurrentLinkedQueue
 
 
 class StocksViewModel(
         application: Application,
         private val repository: StocksRepository
 ): AndroidViewModel(application) {
-    val topStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
-    val searchStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
-    val savedStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val topStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
+    val searchStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
+    val savedStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
 
     init {
+        initUI()
+    }
+
+    fun initUI(){
         getTopStocks(DOW_JONES)
         updateSavedStocks()
     }
 
-    /*TODO("обработать все возможные ошибки которые может вернуть запрос" +
-    "разобраться с поиском(исправить его поведение мб добавить кнопку)" +
+    /*TODO("разобраться с поиском(исправить его поведение мб добавить кнопку)" +
     "добавить еще графики для остальных данных и подправить внещний вид графика и новостей")*/
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
         topStocksLiveData.initLiveData {
-            repository.getTopStocksTickers(symbol).constituents
+            repository.getTopStocksTickers(symbol).constituents.subList(0, 12)
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
         searchStocksLiveData.initLiveData {
-            repository.searchStock(query).result.map { it.symbol }
+            repository.searchStock(query).result.map { it.symbol }.subList(0,12)
         }
     }
 
@@ -65,99 +73,110 @@ class StocksViewModel(
     fun saveStockToSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.insertStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(updateStockList))
+        savedStocksLiveData.postValue(Resource.Success(ConcurrentLinkedQueue(updateStockList)))
     }
 
     fun deleteStockFromSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.deleteStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(updateStockList))
+        savedStocksLiveData.postValue(Resource.Success(ConcurrentLinkedQueue(updateStockList)))
     }
 
     // utils
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
-            val list = mutableListOf<Stock>()
+            val queue = ConcurrentLinkedQueue<Stock>()
 
             if (hasInternetConnection()) {
-                val tickers = getTickers()
                 try {
+                    val tickers = getTickers()
                     if (tickers.isNotEmpty()) {
-                        list.initStockList(tickers)
+                        queue.initStockQueue(tickers)
                     }
-                } catch (e: Exception){
-                    postValue(Resource.Error(e.message.toString()))
+                } catch (e: ApiLimitException) {
+                    postValue(Resource.Error(e.message!!))
+                    return
+                } catch (e: ApiAccessException){
+                    /* handle apiAccessException in future or buy access to api */
+                } catch (e: OtherApiException){
+                    /* handle specific exception from response */
                 }
+
             } else {
-                postValue(Resource.Error("no internet"))
+                postValue(Resource.Error("No internet connection"))
                 return
             }
 
-            postValue(Resource.Success(list))
+            postValue(Resource.Success(queue))
         } catch (e: Throwable) {
             when(e){
-                is IOException -> postValue(Resource.Error("Network Failure"))
+                is IOException -> postValue(Resource.Error(e.message!!))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
-            val list = mutableListOf<Stock>()
+            val queue = ConcurrentLinkedQueue<Stock>()
             if (hasInternetConnection()) {
                 val tickers = getSavedTickers()
                 try {
                     if (tickers.isNotEmpty()) {
-                        list.initStockList(tickers)
+                        queue.initStockQueue(tickers)
                     }
-                } catch (e: Exception){
-                    postValue(Resource.Error(e.message.toString()))
+                } catch (e: ApiLimitException) {
+                    postValue(Resource.Error(e.message!!))
+                    return
+                } catch (e: ApiAccessException){
+                    /* handle apiAccessException in future or buy access to api */
+                } catch (e: OtherApiException){
+                    /* handle specific exception from response */
                 }
             } else {
                 val lastSavedStocks = repository.getAllSavedStocks()
-                list.addAll(lastSavedStocks)
+                queue.addAll(lastSavedStocks)
             }
 
-            postValue(Resource.Success(list))
-
-            if(list.isNotEmpty()) {
+            postValue(Resource.Success(queue))
+            if(queue.isNotEmpty()) {
                 repository.deleteAllSavedStocks()
-                repository.insertAllStocks(list)
+                repository.insertAllStocks(queue.toList())
             }
         } catch (e: Throwable) {
             when(e){
-                is IOException -> postValue(Resource.Error("Network Failure"))
+                is IOException -> postValue(Resource.Error(e.message!!))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
+    private suspend fun ConcurrentLinkedQueue<Stock>.initStockQueue(queue: List<String>) = supervisorScope() {
         val uiScope = CoroutineScope(SupervisorJob())
-        list.map { item ->
-                uiScope.async {
-                    val companyProfile2Response = async {
-                        repository.getCompanyProfile2(item)
-                    }
-                    val quoteResponse = async {
-                        repository.getQuote(item)
-                    }
-                    val newsResponse = async {
-                        repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
-                    }
-                    val candleResponse = async {
-                        repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
-                    }
-                    add(Stock(companyProfile2Response.await(),
-                            quoteResponse.await(),
-                            newsResponse.await(),
-                            candleResponse.await()))
+        queue.map { item ->
+            uiScope.async {
+                val companyProfile2Response = async {
+                    repository.getCompanyProfile2(item)
                 }
-            }.awaitAll()
-        }
+                val quoteResponse = async {
+                    repository.getQuote(item)
+                }
+                val newsResponse = async {
+                    repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
+                }
+                val candleResponse = async {
+                    repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
+                }
+
+                add(Stock(companyProfile2Response.await(),
+                        quoteResponse.await(),
+                        newsResponse.await(),
+                        candleResponse.await()))
+            }
+        }.awaitAll()
+    }
 
     @Suppress("DEPRECATION")
     private fun hasInternetConnection(): Boolean {
