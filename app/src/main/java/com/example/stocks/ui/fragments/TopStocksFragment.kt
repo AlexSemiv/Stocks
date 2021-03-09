@@ -1,14 +1,31 @@
 package com.example.stocks.ui.fragments
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import com.example.stocks.R
-import com.google.android.material.snackbar.Snackbar
 
 class TopStocksFragment(
 ) : StockFragment(R.id.action_topStocksFragment_to_informationStockFragment) {
-    override fun getLiveData() = viewModel.topStocksLiveData
+    override fun setLiveData() = viewModel.topStocksLiveData
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.clear()
+        inflater.inflate(R.menu.options_menu_top,menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.refresh -> {
+                viewModel.refreshUI()
+                true
+            }
+            else -> false
+        }
+    }
 }

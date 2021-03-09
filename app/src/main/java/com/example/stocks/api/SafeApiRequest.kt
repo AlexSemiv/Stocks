@@ -9,7 +9,7 @@ import com.example.stocks.util.Utils.Companion.UNSUCCESS_429
 import retrofit2.Response
 
 abstract class SafeApiRequest {
-    suspend fun <T> apiRequest(call: suspend () -> Response<T>): T {
+    suspend fun <T> handleApiRequest(call: suspend () -> Response<T>): T {
         val response = call.invoke()
 
         return if(response.isSuccessful){

@@ -39,16 +39,15 @@ class StocksViewModel(
     val savedStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
 
     init {
-        initUI()
+        refreshUI()
     }
 
-    fun initUI(){
+    fun refreshUI(){
         getTopStocks(DOW_JONES)
         updateSavedStocks()
     }
 
-    /*TODO("разобраться с поиском(исправить его поведение мб добавить кнопку)" +
-    "добавить еще графики для остальных данных и подправить внещний вид графика и новостей")*/
+    /*TODO("добавить еще графики для остальных данных и подправить внещний вид графика и новостей")*/
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
@@ -153,10 +152,10 @@ class StocksViewModel(
         }
     }
 
-    private suspend fun ConcurrentLinkedQueue<Stock>.initStockQueue(queue: List<String>) = supervisorScope() {
+    private suspend fun ConcurrentLinkedQueue<Stock>.initStockQueue(queue: List<String>) = supervisorScope {
         val uiScope = CoroutineScope(SupervisorJob())
         queue.map { item ->
-            uiScope.async {
+            uiScope.async(Dispatchers.Main) {
                 val companyProfile2Response = async {
                     repository.getCompanyProfile2(item)
                 }

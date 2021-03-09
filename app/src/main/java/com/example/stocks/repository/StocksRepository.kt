@@ -10,32 +10,32 @@ class StocksRepository(
 ): SafeApiRequest() {
     // retrofit
     suspend fun getTopStocksTickers(symbol: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.getTopStocksTickers(symbol)
             }
 
     suspend fun searchStock(query: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.searchStock(query)
             }
 
     suspend fun getCompanyProfile2(symbol: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.getCompanyProfile2(symbol)
             }
 
     suspend fun getQuote(symbol: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.getQuote(symbol)
             }
 
     suspend fun getCompanyNews(symbol: String, from: String, to: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.getCompanyNews(symbol, from, to)
             }
 
     suspend fun getCandle(symbol: String, resolution: String, from: String, to: String) =
-            apiRequest {
+            handleApiRequest {
                 RetrofitInstance.api.getCandle(symbol, resolution, from, to)
             }
 

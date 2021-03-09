@@ -2,11 +2,9 @@ package com.example.stocks.ui.fragments
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,14 +16,7 @@ import com.example.stocks.ui.adapters.StocksAdapter
 import com.example.stocks.util.Resource
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stocks.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.supervisorScope
-import okhttp3.internal.notifyAll
-import okhttp3.internal.wait
+import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 abstract class StockFragment(
@@ -34,7 +25,7 @@ abstract class StockFragment(
     lateinit var viewModel: StocksViewModel
     lateinit var stocksAdapter: StocksAdapter
 
-    abstract fun getLiveData(): LiveData<Resource<ConcurrentLinkedQueue<Stock>>>
+    abstract fun setLiveData(): LiveData<Resource<ConcurrentLinkedQueue<Stock>>>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,12 +49,13 @@ abstract class StockFragment(
             )
         }
 
-        getLiveData().observe(viewLifecycleOwner, Observer { response ->
+        setLiveData().observe(viewLifecycleOwner, Observer { response ->
             when (response) {
                 is Resource.Success -> {
-                    hideProgressBar()
-                    lifecycleScope.launch {
-                        delay(500L)
+                    MainScope().launch {
+                        showProgressBar()
+                        delay(1000L)
+                        hideProgressBar()
                         response.data?.let { listStocks ->
                             stocksAdapter.differ.submitList(listStocks.toList())
                         }
@@ -87,9 +79,5 @@ abstract class StockFragment(
 
     private fun showProgressBar() {
         progress_bar.visibility = View.VISIBLE
-    }
-
-    fun showEditText(){
-        edit_text.visibility = View.VISIBLE
     }
 }
