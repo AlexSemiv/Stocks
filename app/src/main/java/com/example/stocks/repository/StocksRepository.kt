@@ -4,6 +4,7 @@ import com.example.stocks.api.SafeApiRequest
 import com.example.stocks.db.SavedStockDatabase
 import com.example.stocks.db.Stock
 import com.example.stocks.response.RetrofitInstance
+import dagger.hilt.EntryPoint
 
 class StocksRepository(
         val db: SavedStockDatabase

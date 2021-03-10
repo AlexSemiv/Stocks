@@ -7,7 +7,6 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkCapabilities.*
 import android.os.Build
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -26,7 +25,7 @@ import com.example.stocks.util.Utils.Companion.NEWS_FROM
 import com.example.stocks.util.Utils.Companion.NEWS_TO
 import kotlinx.coroutines.*
 import java.io.IOException
-import java.lang.Exception
+import java.lang.NumberFormatException
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
@@ -34,9 +33,9 @@ class StocksViewModel(
         application: Application,
         private val repository: StocksRepository
 ): AndroidViewModel(application) {
-    val topStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
-    val searchStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
-    val savedStocksLiveData: MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>> = MutableLiveData()
+    val topStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val searchStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val savedStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
 
     init {
         refreshUI()
@@ -47,18 +46,19 @@ class StocksViewModel(
         updateSavedStocks()
     }
 
-    /*TODO("добавить еще графики для остальных данных и подправить внещний вид графика и новостей")*/
+    /*TODO("добавить еще графики для остальных данных и подправить внещний вид графика и новостей" +
+        " java.lang.NumberFormatException: Expected an int but was 2535690129 at line 1 column 330 path $.v[0]  ")*/
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
         topStocksLiveData.initLiveData {
-            repository.getTopStocksTickers(symbol).constituents.subList(0, 12)
+            repository.getTopStocksTickers(symbol).constituents.subList(0, 10)
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
         searchStocksLiveData.initLiveData {
-            repository.searchStock(query).result.map { it.symbol }.subList(0,12)
+            repository.searchStock(query).result.map { it.symbol }.subList(0, 10)
         }
     }
 
@@ -72,26 +72,26 @@ class StocksViewModel(
     fun saveStockToSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.insertStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(ConcurrentLinkedQueue(updateStockList)))
+        savedStocksLiveData.postValue(Resource.Success(updateStockList))
     }
 
     fun deleteStockFromSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.deleteStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(ConcurrentLinkedQueue(updateStockList)))
+        savedStocksLiveData.postValue(Resource.Success(updateStockList))
     }
 
     // utils
-    private suspend fun MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
-            val queue = ConcurrentLinkedQueue<Stock>()
+            val stockList = mutableListOf<Stock>()
 
             if (hasInternetConnection()) {
                 try {
                     val tickers = getTickers()
                     if (tickers.isNotEmpty()) {
-                        queue.initStockQueue(tickers)
+                        stockList.initStockList(tickers)
                     }
                 } catch (e: ApiLimitException) {
                     postValue(Resource.Error(e.message!!))
@@ -107,24 +107,25 @@ class StocksViewModel(
                 return
             }
 
-            postValue(Resource.Success(queue))
+            postValue(Resource.Success(stockList))
         } catch (e: Throwable) {
             when(e){
                 is IOException -> postValue(Resource.Error(e.message!!))
+                is NumberFormatException -> postValue(Resource.Error(e.message!!))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun MutableLiveData<Resource<ConcurrentLinkedQueue<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         try {
-            val queue = ConcurrentLinkedQueue<Stock>()
+            val stockList = mutableListOf<Stock>()
             if (hasInternetConnection()) {
                 val tickers = getSavedTickers()
                 try {
                     if (tickers.isNotEmpty()) {
-                        queue.initStockQueue(tickers)
+                        stockList.initStockList(tickers)
                     }
                 } catch (e: ApiLimitException) {
                     postValue(Resource.Error(e.message!!))
@@ -136,23 +137,24 @@ class StocksViewModel(
                 }
             } else {
                 val lastSavedStocks = repository.getAllSavedStocks()
-                queue.addAll(lastSavedStocks)
+                stockList.addAll(lastSavedStocks)
             }
 
-            postValue(Resource.Success(queue))
-            if(queue.isNotEmpty()) {
+            postValue(Resource.Success(stockList))
+            if(stockList.isNotEmpty()) {
                 repository.deleteAllSavedStocks()
-                repository.insertAllStocks(queue.toList())
+                repository.insertAllStocks(stockList.toList())
             }
         } catch (e: Throwable) {
             when(e){
                 is IOException -> postValue(Resource.Error(e.message!!))
+                is NumberFormatException -> postValue(Resource.Error(e.message!!))
                 else -> postValue(Resource.Error("Conversion Error"))
             }
         }
     }
 
-    private suspend fun ConcurrentLinkedQueue<Stock>.initStockQueue(queue: List<String>) = supervisorScope {
+    private suspend fun MutableList<Stock>.initStockList(queue: List<String>) = supervisorScope {
         val uiScope = CoroutineScope(SupervisorJob())
         queue.map { item ->
             uiScope.async(Dispatchers.Main) {

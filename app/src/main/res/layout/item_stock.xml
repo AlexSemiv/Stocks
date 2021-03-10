@@ -42,7 +42,7 @@
                 android:id="@+id/current_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{`price: `+String.valueOf(stock.price.c)+` $`}"
+                android:text="@{String.valueOf(stock.price.c)+`$`}"
                 android:textSize="20sp"
                 tools:text="CURRENT" />
 
@@ -50,9 +50,11 @@
                 android:id="@+id/changed_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4sp"
+                android:layout_marginLeft="4sp"
                 android:paddingLeft="4dp"
-                android:text="@{` (+`+String.valueOf(Math.round(stock.price.h-stock.price.l))+`$)`}"
                 android:textSize="18sp"
+                app:setChangedPrice="@{stock.price.o - stock.price.c}"
                 tools:text="CHANGED high-low" />
         </LinearLayout>
 

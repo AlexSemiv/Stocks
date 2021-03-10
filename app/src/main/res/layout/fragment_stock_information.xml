@@ -57,17 +57,19 @@
         <TextView
             android:id="@+id/current_price"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{`price: `+String.valueOf(stock.price.c)+` $`}"
-            android:textSize="18sp"
+            android:layout_height="match_parent"
+            android:text="@{String.valueOf(stock.price.c)+`$`}"
+            android:textSize="20sp"
             tools:text="CURRENT" />
 
         <TextView
             android:id="@+id/changed_price"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:text="@{` (+`+String.valueOf(Math.round(stock.price.h-stock.price.l))+`$)`}"
+            android:layout_height="24dp"
+            android:layout_marginStart="4sp"
+            android:layout_marginLeft="4sp"
+            app:setChangedPrice="@{stock.price.o - stock.price.c}"
+            android:textSize="18sp"
             tools:text="CHANGED high-low" />
     </LinearLayout>
 
@@ -79,19 +81,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floating_button_save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:src="@drawable/ic_baseline_favorite_24"
-        app:backgroundTint="@color/purple_200"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
@@ -118,18 +108,27 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/gradient"
+        android:gravity="center"
         android:text="Graph (6 months)"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/graphView" />
+        app:layout_constraintTop_toBottomOf="@+id/ticker" />
 
     <TextView
         android:id="@+id/textView3"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/gradient"
+        android:gravity="center"
         android:text="News"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2" />

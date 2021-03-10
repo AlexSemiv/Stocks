@@ -25,7 +25,7 @@ abstract class StockFragment(
     lateinit var viewModel: StocksViewModel
     lateinit var stocksAdapter: StocksAdapter
 
-    abstract fun setLiveData(): LiveData<Resource<ConcurrentLinkedQueue<Stock>>>
+    abstract fun setLiveData(): LiveData<Resource<List<Stock>>>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,7 +57,7 @@ abstract class StockFragment(
                         delay(1000L)
                         hideProgressBar()
                         response.data?.let { listStocks ->
-                            stocksAdapter.differ.submitList(listStocks.toList())
+                            stocksAdapter.differ.submitList(listStocks)
                         }
                     }
                 }

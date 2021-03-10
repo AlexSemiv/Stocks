@@ -43,15 +43,6 @@ class NewsAdapter: RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
         val news = differ.currentList[position]
         holder.binding.news = news
-        holder.itemView.apply {
-            Glide.with(this)
-                    .load(news.url)
-                    .override(500,500)
-                    .fitCenter()
-                    .error(R.drawable.ic_baseline_default_ticker_24)
-                    .into(image_news)
-        }
-
         holder.itemView.setOnClickListener {
             onItemClickListener?.let {
                 it(news)
