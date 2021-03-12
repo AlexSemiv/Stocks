@@ -5,7 +5,7 @@
     <data>
         <variable
             name="news"
-            type="com.example.stocks.response.news.CompanyNewsResponseItem" />
+            type="com.example.stocks.model.news.CompanyNewsResponseItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

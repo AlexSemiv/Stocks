@@ -3,7 +3,9 @@ package com.example.stocks.ui.fragments
 import android.os.Bundle
 import android.view.*
 import com.example.stocks.R
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TopStocksFragment(
 ) : StockFragment(R.id.action_topStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.topStocksLiveData

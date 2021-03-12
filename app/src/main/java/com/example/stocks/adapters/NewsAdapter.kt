@@ -1,4 +1,4 @@
-package com.example.stocks.ui.adapters
+package com.example.stocks.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stocks.R
 import com.example.stocks.databinding.ItemNewsBinding
-import com.example.stocks.response.news.CompanyNewsResponseItem
+import com.example.stocks.model.news.CompanyNewsResponseItem
 
 class NewsAdapter: RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     inner class NewsViewHolder(
@@ -23,8 +23,7 @@ class NewsAdapter: RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     }
     val differ = AsyncListDiffer(this, differCallback)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
-        return NewsViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = NewsViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
                         R.layout.item_news,
@@ -32,7 +31,6 @@ class NewsAdapter: RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
                         false
                 )
         )
-    }
 
     override fun getItemCount() = differ.currentList.size
 

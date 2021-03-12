@@ -6,9 +6,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stocks.R
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stocks.*
 
-
+@AndroidEntryPoint
 class SavedStocksFragment(
 ) : StockFragment(R.id.action_savedStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.savedStocksLiveData
@@ -32,7 +33,6 @@ class SavedStocksFragment(
                 }
             }
         }
-
         ItemTouchHelper(itemTouchHelperCallback).apply {
             attachToRecyclerView(recycler)
         }

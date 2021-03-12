@@ -1,4 +1,4 @@
-package com.example.stocks.response
+package com.example.stocks.model
 
 import java.io.Serializable
 

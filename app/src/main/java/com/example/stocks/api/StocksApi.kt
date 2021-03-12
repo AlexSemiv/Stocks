@@ -1,11 +1,11 @@
 package com.example.stocks.api
 
-import com.example.stocks.response.CandleResponse
-import com.example.stocks.response.CompanyProfileResponse
-import com.example.stocks.response.DowJonesResponse
-import com.example.stocks.response.QuoteResponse
-import com.example.stocks.response.news.CompanyNewsResponse
-import com.example.stocks.response.search.SearchResponse
+import com.example.stocks.model.CandleResponse
+import com.example.stocks.model.CompanyProfileResponse
+import com.example.stocks.model.DowJonesResponse
+import com.example.stocks.model.QuoteResponse
+import com.example.stocks.model.news.CompanyNewsResponse
+import com.example.stocks.model.search.SearchResponse
 import com.example.stocks.util.Utils.Companion.API_TOKEN
 import retrofit2.Response
 import retrofit2.http.GET

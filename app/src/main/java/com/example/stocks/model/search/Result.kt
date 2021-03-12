@@ -1,4 +1,4 @@
-package com.example.stocks.response.search
+package com.example.stocks.model.search
 
 data class Result(
     val description: String,

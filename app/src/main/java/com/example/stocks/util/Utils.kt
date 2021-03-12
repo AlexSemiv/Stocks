@@ -12,7 +12,6 @@ class Utils {
         const val API_TOKEN = "c0l6e0f48v6orbr0rekg"
         const val DOW_JONES = "^DJI"
         const val CANDLE_RESOLUTION = "M"
-
         const val SUCCESS_200 = 200
         const val UNSUCCESS_429 = 429
 
@@ -29,12 +28,11 @@ class Utils {
             getTimeForCandle().second
         }
 
-
         private fun getDateForCompanyNews(): Pair<String,String> {
             val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
 
             val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -3)
+            calendar.add(Calendar.WEEK_OF_YEAR, -1)
 
             val from = simpleDateFormat.format(calendar.time)
             val to = simpleDateFormat.format(Date())

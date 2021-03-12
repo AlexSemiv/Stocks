@@ -2,10 +2,10 @@ package com.example.stocks.db
 
 import androidx.room.Embedded
 import androidx.room.Entity
-import com.example.stocks.response.CandleResponse
-import com.example.stocks.response.CompanyProfileResponse
-import com.example.stocks.response.QuoteResponse
-import com.example.stocks.response.news.CompanyNewsResponse
+import com.example.stocks.model.CandleResponse
+import com.example.stocks.model.CompanyProfileResponse
+import com.example.stocks.model.QuoteResponse
+import com.example.stocks.model.news.CompanyNewsResponse
 import java.io.Serializable
 @Entity(
         tableName = "stocks",

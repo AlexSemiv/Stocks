@@ -1,3 +1,3 @@
-package com.example.stocks.response.news
+package com.example.stocks.model.news
 
 class CompanyNewsResponse : ArrayList<CompanyNewsResponseItem>()

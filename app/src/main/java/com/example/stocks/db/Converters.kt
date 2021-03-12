@@ -1,11 +1,9 @@
 package com.example.stocks.db
 
 import androidx.room.TypeConverter
-import com.example.stocks.response.CandleResponse
-import com.example.stocks.response.CompanyProfileResponse
-import com.example.stocks.response.QuoteResponse
-import com.example.stocks.response.news.CompanyNewsResponse
-import com.example.stocks.response.news.CompanyNewsResponseItem
+import com.example.stocks.model.CandleResponse
+import com.example.stocks.model.QuoteResponse
+import com.example.stocks.model.news.CompanyNewsResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

@@ -5,13 +5,14 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.SearchView
-import androidx.core.widget.addTextChangedListener
 import com.example.stocks.R
 import com.example.stocks.ui.StocksActivity
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stocks.*
 import kotlinx.coroutines.*
 
+@AndroidEntryPoint
 class SearchStocksFragment(
 ) : StockFragment(R.id.action_searchStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.searchStocksLiveData
@@ -25,10 +26,8 @@ class SearchStocksFragment(
         super.onCreateOptionsMenu(menu, inflater)
         menu.clear()
         inflater.inflate(R.menu.options_menu_search, menu)
-        val searchView = SearchView((context as StocksActivity).supportActionBar?.themedContext ?: context)
-        val menuItem = menu.findItem(R.id.search).apply {
-            actionView = searchView
-        }
+        val menuItem = menu.findItem(R.id.search)
+        val searchView = menuItem?.actionView as SearchView
 
         var searchJob: Job? = null
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{

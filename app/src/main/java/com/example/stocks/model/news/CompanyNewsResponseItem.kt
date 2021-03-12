@@ -1,4 +1,4 @@
-package com.example.stocks.response.news
+package com.example.stocks.model.news
 
 import java.io.Serializable
 

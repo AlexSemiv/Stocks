@@ -1,4 +1,4 @@
-package com.example.stocks.ui.adapters
+package com.example.stocks.adapters
 
 import android.graphics.Color
 import android.widget.TextView

@@ -1,4 +1,4 @@
-package com.example.stocks.ui.adapters
+package com.example.stocks.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,18 +18,13 @@ class StocksAdapter : RecyclerView.Adapter<StocksAdapter.StockViewHolder>() {
     ) : RecyclerView.ViewHolder(binding.root)
 
     private val differCallback = object : DiffUtil.ItemCallback<Stock>(){
-        override fun areItemsTheSame(oldItem: Stock, newItem: Stock): Boolean {
-            return oldItem.profile.ticker == newItem.profile.ticker
-        }
+        override fun areItemsTheSame(oldItem: Stock, newItem: Stock) = oldItem.profile.ticker == newItem.profile.ticker
 
-        override fun areContentsTheSame(oldItem: Stock, newItem: Stock): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: Stock, newItem: Stock) = oldItem == newItem
     }
     val differ = AsyncListDiffer(this, differCallback)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockViewHolder {
-        return StockViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = StockViewHolder(
                 DataBindingUtil.inflate(
                         LayoutInflater.from(parent.context),
                         R.layout.item_stock,
@@ -37,7 +32,6 @@ class StocksAdapter : RecyclerView.Adapter<StocksAdapter.StockViewHolder>() {
                         false
                 )
         )
-    }
 
     override fun getItemCount() = differ.currentList.size
 

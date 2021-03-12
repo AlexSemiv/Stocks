@@ -1,4 +1,4 @@
-package com.example.stocks.response
+package com.example.stocks.model
 
 import androidx.room.PrimaryKey
 import java.io.Serializable

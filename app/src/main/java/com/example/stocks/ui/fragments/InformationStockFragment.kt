@@ -15,18 +15,20 @@ import com.example.stocks.R
 import com.example.stocks.databinding.FragmentStockInformationBinding
 import com.example.stocks.db.Stock
 import com.example.stocks.ui.StocksActivity
-import com.example.stocks.ui.adapters.NewsAdapter
-import com.example.stocks.ui.viewmodel.StocksViewModel
+import com.example.stocks.adapters.NewsAdapter
+import com.example.stocks.viewmodel.StocksViewModel
 import com.example.stocks.util.Utils.Companion.initGraphData
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stock_information.*
 import kotlinx.android.synthetic.main.item_stock.view.logo
 
-
+@AndroidEntryPoint
 class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
 
     lateinit var viewModel : StocksViewModel
     lateinit var newsAdapter: NewsAdapter
+
     private val args: InformationStockFragmentArgs by navArgs()
     private lateinit var _stock: Stock
 
@@ -65,6 +67,7 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
                     bundle
             )
         }
+
         graphView.setDots(
                 _stock.candle.o.initGraphData(),
                 _stock.candle.c.initGraphData(),

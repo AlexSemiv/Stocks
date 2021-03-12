@@ -3,7 +3,7 @@ package com.example.stocks.db
 import androidx.room.*
 
 @Dao
-interface StockDao {
+interface StocksDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStock(stock: Stock): Long
@@ -11,7 +11,6 @@ interface StockDao {
     @Delete
     suspend fun deleteStock(stock: Stock)
 
-    // saved stocks
     @Query("SELECT ticker FROM stocks")
     suspend fun getTickersOfSavedStocks(): List<String>
 

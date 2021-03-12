@@ -1,4 +1,4 @@
-package com.example.stocks.ui.viewmodel
+package com.example.stocks.viewmodel
 
 import android.app.Application
 import android.content.Context
@@ -21,11 +21,14 @@ import com.example.stocks.util.Utils.Companion.CANDLE_TO
 import com.example.stocks.util.Utils.Companion.DOW_JONES
 import com.example.stocks.util.Utils.Companion.NEWS_FROM
 import com.example.stocks.util.Utils.Companion.NEWS_TO
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import java.io.IOException
+import javax.inject.Inject
 
-
-class StocksViewModel(
+@HiltViewModel
+class StocksViewModel
+@Inject constructor(
         application: Application,
         private val repository: StocksRepository
 ): AndroidViewModel(application) {
@@ -42,8 +45,7 @@ class StocksViewModel(
         updateSavedStocks()
     }
 
-    /*TODO( "hilt" +
-            "unit-tests" +
+    /*TODO( "unit-tests" +
             "java.lang.NumberFormatException: Expected an int but was 2535690129 at line 1 column 330 path $.v[0]  " +
             "websockets")*/
 
@@ -125,6 +127,7 @@ class StocksViewModel(
             postValue(Resource.Success(repository.getAllSavedStocks()))
         }
     }
+
     private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
         val uiScope = CoroutineScope(SupervisorJob())
         list.map { item ->
@@ -148,7 +151,9 @@ class StocksViewModel(
                 val candle = candleResponse.await()
 
                 if(companyProfile2 != null && quote != null && news != null && candle != null) {
-                    add(Stock(companyProfile2, quote, news, candle))
+                    if(companyProfile2.ticker != "") {
+                        add(Stock(companyProfile2, quote, news, candle))
+                    }
                 }
             }
         }.awaitAll()

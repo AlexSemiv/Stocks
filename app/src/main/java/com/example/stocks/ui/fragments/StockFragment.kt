@@ -11,12 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stocks.R
 import com.example.stocks.db.Stock
 import com.example.stocks.ui.StocksActivity
-import com.example.stocks.ui.viewmodel.StocksViewModel
-import com.example.stocks.ui.adapters.StocksAdapter
+import com.example.stocks.viewmodel.StocksViewModel
+import com.example.stocks.adapters.StocksAdapter
 import com.example.stocks.util.Resource
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stocks.*
 
+@AndroidEntryPoint
 abstract class StockFragment(
         private val navGraphAction: Int
 ): Fragment(R.layout.fragment_stocks) {
