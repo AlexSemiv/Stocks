@@ -4,10 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.provider.ContactsContract
 import android.util.AttributeSet
 import android.view.View
-import com.example.stocks.db.Stock
 
 class GraphView(
         context: Context,
@@ -80,13 +78,13 @@ class GraphView(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.draw(dataSetOpen,dataOpenPointLinePaint)
-        canvas?.draw(dataSetClose, dataClosePointLinePaint)
-        canvas?.draw(dataSetHigh,dataHighPointLinePaint)
-        canvas?.draw(dataSetLow,dataLowPointLinePaint)
+        canvas?.drawLine(dataSetOpen,dataOpenPointLinePaint)
+        canvas?.drawLine(dataSetClose, dataClosePointLinePaint)
+        canvas?.drawLine(dataSetHigh,dataHighPointLinePaint)
+        canvas?.drawLine(dataSetLow,dataLowPointLinePaint)
     }
 
-    private fun Canvas.draw(list: MutableList<DataPoint> ,line: Paint){
+    private fun Canvas.drawLine(list: MutableList<DataPoint>, line: Paint){
         list.forEachIndexed() { index, currentDataPoint ->
             val realX = currentDataPoint.x.toRealX()
             val realY = currentDataPoint.y.toRealY()

@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @BindingAdapter("app:setDateFormat")
-fun dateFormat(view: TextView, dateTime: Int) {
+fun dateFormat(view: TextView, dateTime: Float) {
     try {
         val sdf = SimpleDateFormat("MM/dd/yyyy")
         val netDate = Date(dateTime.toLong() * 1000)
@@ -34,6 +34,7 @@ fun changedPrice(view: TextView, changedPrice: Double) {
                 view.setTextColor(Color.RED)
             }
             append("$)")
+            toString()
         }
     } catch (e: Exception){
         view.text = "unknown"

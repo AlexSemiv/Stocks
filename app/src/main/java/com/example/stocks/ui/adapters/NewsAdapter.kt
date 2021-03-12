@@ -6,13 +6,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.stocks.R
 import com.example.stocks.databinding.ItemNewsBinding
-import com.example.stocks.db.Stock
 import com.example.stocks.response.news.CompanyNewsResponseItem
-import kotlinx.android.synthetic.main.item_news.view.*
-import kotlinx.android.synthetic.main.item_stock.view.*
 
 class NewsAdapter: RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     inner class NewsViewHolder(

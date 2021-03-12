@@ -13,9 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.stocks.StockApplication
 import com.example.stocks.db.Stock
 import com.example.stocks.repository.StocksRepository
-import com.example.stocks.util.ApiAccessException
 import com.example.stocks.util.ApiLimitException
-import com.example.stocks.util.OtherApiException
 import com.example.stocks.util.Resource
 import com.example.stocks.util.Utils.Companion.CANDLE_FROM
 import com.example.stocks.util.Utils.Companion.CANDLE_RESOLUTION
@@ -25,8 +23,6 @@ import com.example.stocks.util.Utils.Companion.NEWS_FROM
 import com.example.stocks.util.Utils.Companion.NEWS_TO
 import kotlinx.coroutines.*
 import java.io.IOException
-import java.lang.NumberFormatException
-import java.util.concurrent.ConcurrentLinkedQueue
 
 
 class StocksViewModel(
@@ -46,19 +42,21 @@ class StocksViewModel(
         updateSavedStocks()
     }
 
-    /*TODO("добавить еще графики для остальных данных и подправить внещний вид графика и новостей" +
-        " java.lang.NumberFormatException: Expected an int but was 2535690129 at line 1 column 330 path $.v[0]  ")*/
+    /*TODO( "hilt" +
+            "unit-tests" +
+            "java.lang.NumberFormatException: Expected an int but was 2535690129 at line 1 column 330 path $.v[0]  " +
+            "websockets")*/
 
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
-        topStocksLiveData.initLiveData {
-            repository.getTopStocksTickers(symbol).constituents.subList(0, 10)
+        topStocksLiveData.initResponseLiveData {
+            repository.getTopStocksTickers(symbol)?.constituents!!.subList(0, 10)
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
-        searchStocksLiveData.initLiveData {
-            repository.searchStock(query).result.map { it.symbol }.subList(0, 10)
+        searchStocksLiveData.initResponseLiveData {
+            repository.searchStock(query)?.result!!.map { it.symbol }.subList(0, 10)
         }
     }
 
@@ -82,81 +80,54 @@ class StocksViewModel(
     }
 
     // utils
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initLiveData(getTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initResponseLiveData(getTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
+        val stockList = mutableListOf<Stock>()
         try {
-            val stockList = mutableListOf<Stock>()
-
             if (hasInternetConnection()) {
-                try {
-                    val tickers = getTickers()
-                    if (tickers.isNotEmpty()) {
-                        stockList.initStockList(tickers)
-                    }
-                } catch (e: ApiLimitException) {
-                    postValue(Resource.Error(e.message!!))
-                    return
-                } catch (e: ApiAccessException){
-                    /* handle apiAccessException in future or buy access to api */
-                } catch (e: OtherApiException){
-                    /* handle specific exception from response */
+                val tickers = getTickers.invoke()
+                if (tickers.isNotEmpty()) {
+                    stockList.initStockList(tickers)
                 }
-
             } else {
-                postValue(Resource.Error("No internet connection"))
+                postValue(Resource.Error("No internet connection.\nPlease try again later."))
                 return
             }
-
             postValue(Resource.Success(stockList))
         } catch (e: Throwable) {
             when(e){
+                is ApiLimitException -> postValue(Resource.Error(e.message!!))
                 is IOException -> postValue(Resource.Error(e.message!!))
-                is NumberFormatException -> postValue(Resource.Error(e.message!!))
-                else -> postValue(Resource.Error("Conversion Error"))
+                else -> postValue(Resource.Error("Conversion Error.\nPlease try again later."))
             }
         }
     }
 
     private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
+        val stockList = mutableListOf<Stock>()
         try {
-            val stockList = mutableListOf<Stock>()
             if (hasInternetConnection()) {
-                val tickers = getSavedTickers()
-                try {
-                    if (tickers.isNotEmpty()) {
-                        stockList.initStockList(tickers)
-                    }
-                } catch (e: ApiLimitException) {
-                    postValue(Resource.Error(e.message!!))
-                    return
-                } catch (e: ApiAccessException){
-                    /* handle apiAccessException in future or buy access to api */
-                } catch (e: OtherApiException){
-                    /* handle specific exception from response */
+                val tickers = getSavedTickers.invoke()
+                if (tickers.isNotEmpty()) {
+                    stockList.initStockList(tickers)
                 }
             } else {
-                val lastSavedStocks = repository.getAllSavedStocks()
-                stockList.addAll(lastSavedStocks)
+                postValue(Resource.Success(repository.getAllSavedStocks()))
+                return
             }
-
             postValue(Resource.Success(stockList))
             if(stockList.isNotEmpty()) {
                 repository.deleteAllSavedStocks()
-                repository.insertAllStocks(stockList.toList())
+                repository.insertAllStocks(stockList)
             }
         } catch (e: Throwable) {
-            when(e){
-                is IOException -> postValue(Resource.Error(e.message!!))
-                is NumberFormatException -> postValue(Resource.Error(e.message!!))
-                else -> postValue(Resource.Error("Conversion Error"))
-            }
+            postValue(Resource.Success(repository.getAllSavedStocks()))
         }
     }
-
-    private suspend fun MutableList<Stock>.initStockList(queue: List<String>) = supervisorScope {
+    private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
         val uiScope = CoroutineScope(SupervisorJob())
-        queue.map { item ->
+        list.map { item ->
             uiScope.async(Dispatchers.Main) {
                 val companyProfile2Response = async {
                     repository.getCompanyProfile2(item)
@@ -171,10 +142,14 @@ class StocksViewModel(
                     repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
                 }
 
-                add(Stock(companyProfile2Response.await(),
-                        quoteResponse.await(),
-                        newsResponse.await(),
-                        candleResponse.await()))
+                val companyProfile2 = companyProfile2Response.await()
+                val quote = quoteResponse.await()
+                val news = newsResponse.await()
+                val candle = candleResponse.await()
+
+                if(companyProfile2 != null && quote != null && news != null && candle != null) {
+                    add(Stock(companyProfile2, quote, news, candle))
+                }
             }
         }.awaitAll()
     }

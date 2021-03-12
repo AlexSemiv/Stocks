@@ -8,5 +8,5 @@ data class QuoteResponse(
     val l: Double, // Low price of the day
     val o: Double, // Open price of the day
     val pc: Double, // Previous close price
-    val t: Float
+    val t: Float // int
 ) : Serializable

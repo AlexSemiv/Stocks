@@ -16,8 +16,6 @@ import com.example.stocks.ui.adapters.StocksAdapter
 import com.example.stocks.util.Resource
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stocks.*
-import kotlinx.coroutines.*
-import java.util.concurrent.ConcurrentLinkedQueue
 
 abstract class StockFragment(
         private val navGraphAction: Int
@@ -52,13 +50,9 @@ abstract class StockFragment(
         setLiveData().observe(viewLifecycleOwner, Observer { response ->
             when (response) {
                 is Resource.Success -> {
-                    MainScope().launch {
-                        showProgressBar()
-                        delay(1000L)
-                        hideProgressBar()
-                        response.data?.let { listStocks ->
-                            stocksAdapter.differ.submitList(listStocks)
-                        }
+                    hideProgressBar()
+                    response.data?.let { listStocks ->
+                        stocksAdapter.differ.submitList(listStocks)
                     }
                 }
                 is Resource.Error -> {

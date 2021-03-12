@@ -1,5 +1,6 @@
 package com.example.stocks.util
 
+import com.example.stocks.ui.graph.DataPoint
 import com.google.android.material.chip.ChipDrawable
 import java.text.SimpleDateFormat
 import java.util.*
@@ -10,12 +11,10 @@ class Utils {
         const val BASE_URL = "https://finnhub.io/api/v1/"
         const val API_TOKEN = "c0l6e0f48v6orbr0rekg"
         const val DOW_JONES = "^DJI"
-        const val SEARCHING_TIME_DELAY = 3000L
         const val CANDLE_RESOLUTION = "M"
 
         const val SUCCESS_200 = 200
         const val UNSUCCESS_429 = 429
-        const val UNSUCCESS_403 = 403
 
         val NEWS_FROM by lazy {
             getDateForCompanyNews().first
@@ -47,10 +46,17 @@ class Utils {
             val calendar = Calendar.getInstance()
 
             val to = calendar.timeInMillis / 1000
-            calendar.add(Calendar.MONTH, -6)
+            calendar.add(Calendar.YEAR, -1)
             val from = calendar.timeInMillis / 1000
 
             return Pair(from.toString(),to.toString())
+        }
+
+        fun List<Double>.initGraphData(): List<DataPoint>{
+            var x =0
+            return map {
+                DataPoint(x++,it.toInt())
+            }
         }
     }
 }

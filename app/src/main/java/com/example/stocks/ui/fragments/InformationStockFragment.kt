@@ -16,8 +16,8 @@ import com.example.stocks.databinding.FragmentStockInformationBinding
 import com.example.stocks.db.Stock
 import com.example.stocks.ui.StocksActivity
 import com.example.stocks.ui.adapters.NewsAdapter
-import com.example.stocks.ui.graph.DataPoint
 import com.example.stocks.ui.viewmodel.StocksViewModel
+import com.example.stocks.util.Utils.Companion.initGraphData
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stock_information.*
 import kotlinx.android.synthetic.main.item_stock.view.logo
@@ -71,13 +71,6 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
                 _stock.candle.l.initGraphData(),
                 _stock.candle.h.initGraphData()
         )
-    }
-
-    private fun List<Double>.initGraphData(): List<DataPoint>{
-        var x =0
-        return map {
-            DataPoint(x++,it.toInt())
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

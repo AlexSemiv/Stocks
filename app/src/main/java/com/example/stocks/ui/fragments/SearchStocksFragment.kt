@@ -8,7 +8,6 @@ import android.widget.SearchView
 import androidx.core.widget.addTextChangedListener
 import com.example.stocks.R
 import com.example.stocks.ui.StocksActivity
-import com.example.stocks.util.Utils.Companion.SEARCHING_TIME_DELAY
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_stocks.*
 import kotlinx.coroutines.*
@@ -36,7 +35,6 @@ class SearchStocksFragment(
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchJob?.cancel()
                 searchJob = MainScope().launch {
-                    delay(SEARCHING_TIME_DELAY)
                         if (query != null) {
                             if (query.isNotEmpty()) {
                                 viewModel.searchStocks(query)
