@@ -22,26 +22,27 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stock_information.*
 import kotlinx.android.synthetic.main.item_stock.view.logo
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
 
     lateinit var viewModel : StocksViewModel
-    lateinit var newsAdapter: NewsAdapter
+    @Inject lateinit var newsAdapter: NewsAdapter
 
     private val args: InformationStockFragmentArgs by navArgs()
     private lateinit var _stock: Stock
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = (activity as StocksActivity).viewModel
+        _stock = args.stock
+
         setHasOptionsMenu(true)
 
-        viewModel = (activity as StocksActivity).viewModel
-        newsAdapter = NewsAdapter()
-
         val binding: FragmentStockInformationBinding = FragmentStockInformationBinding.bind(view)
-        _stock = args.stock
         binding.stock = _stock
+
         view.apply {
             Glide.with(this)
                     .load(_stock.profile.logo)
@@ -68,11 +69,12 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
             )
         }
 
+        // init graphics if data is nonNull
         graphView.setDots(
-                _stock.candle.o.initGraphData(),
-                _stock.candle.c.initGraphData(),
-                _stock.candle.l.initGraphData(),
-                _stock.candle.h.initGraphData()
+                _stock.candle.o?.initGraphData() ?: listOf(),
+                _stock.candle.c?.initGraphData() ?: listOf(),
+                _stock.candle.l?.initGraphData() ?: listOf(),
+                _stock.candle.h?.initGraphData() ?: listOf()
         )
     }
 
@@ -82,6 +84,7 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
         inflater.inflate(R.menu.options_menu_information,menu)
     }
 
+    // mechanism of saving stock to local database
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId){
             R.id.save -> {

@@ -32,69 +32,76 @@ class StocksViewModel
         application: Application,
         private val repository: StocksRepository
 ): AndroidViewModel(application) {
-    val topStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
-    val searchStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
-    val savedStocksLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val topLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val savedLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
+    val searchLiveData: MutableLiveData<Resource<List<Stock>>> = MutableLiveData()
 
     init {
         refreshUI()
     }
 
+    // call from init block and topStocks fragment to refreshing data
     fun refreshUI(){
         getTopStocks(DOW_JONES)
         updateSavedStocks()
     }
 
-    /*TODO( "unit-tests" +
-            "java.lang.NumberFormatException: Expected an int but was 2535690129 at line 1 column 330 path $.v[0]  " +
-            "websockets")*/
-
     // retrofit
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
-        topStocksLiveData.initResponseLiveData {
+        topLiveData.initResponseLiveData {
+            // pass a tickers list to init data for recycler in top-10Fragment
             repository.getTopStocksTickers(symbol)?.constituents!!.subList(0, 10)
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
-        searchStocksLiveData.initResponseLiveData {
+        searchLiveData.initResponseLiveData {
+            // pass a tickers list to init data for recycler in searchFragment
             repository.searchStock(query)?.result!!.map { it.symbol }.subList(0, 10)
         }
     }
 
     // local database
     private fun updateSavedStocks() = viewModelScope.launch {
-        savedStocksLiveData.initSavedLiveData {
+        savedLiveData.initSavedLiveData {
+            // pass a tickers list from local database to update info in savedFragment
             repository.getTickersOfSavedStocks()
         }
     }
 
+    // call from informationFragment to saving stock in local database
     fun saveStockToSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.insertStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(updateStockList))
+        savedLiveData.postValue(Resource.Success(updateStockList))
     }
 
+    // call from savedFragment to deleting stock from local database
     fun deleteStockFromSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.deleteStock(stock)
         val updateStockList = repository.getAllSavedStocks()
-        savedStocksLiveData.postValue(Resource.Success(updateStockList))
+        savedLiveData.postValue(Resource.Success(updateStockList))
     }
 
     // utils
+    // init liveData object by passing a func that return list of stocks (top/search)
     private suspend fun MutableLiveData<Resource<List<Stock>>>.initResponseLiveData(getTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         val stockList = mutableListOf<Stock>()
         try {
             if (hasInternetConnection()) {
+                // get list of tickers
                 val tickers = getTickers.invoke()
                 if (tickers.isNotEmpty()) {
+                    // init a data for recyclerView
                     stockList.initStockList(tickers)
                 }
             } else {
                 postValue(Resource.Error("No internet connection.\nPlease try again later."))
                 return
             }
+
+            // pass a data for recyclerView
             postValue(Resource.Success(stockList))
         } catch (e: Throwable) {
             when(e){
@@ -105,20 +112,27 @@ class StocksViewModel
         }
     }
 
+    // init liveData object by passing a func that return list of stocks (saved)
     private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
         val stockList = mutableListOf<Stock>()
         try {
             if (hasInternetConnection()) {
+                // get list of tickers
                 val tickers = getSavedTickers.invoke()
                 if (tickers.isNotEmpty()) {
+                    // init a data for recyclerView (updating saved stocks)
                     stockList.initStockList(tickers)
                 }
             } else {
                 postValue(Resource.Success(repository.getAllSavedStocks()))
                 return
             }
+
+            // pass a data for recyclerView
             postValue(Resource.Success(stockList))
+
+            // updating data in local database
             if(stockList.isNotEmpty()) {
                 repository.deleteAllSavedStocks()
                 repository.insertAllStocks(stockList)
@@ -128,6 +142,7 @@ class StocksViewModel
         }
     }
 
+    // init list of stocks for recyclerView
     private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
         val uiScope = CoroutineScope(SupervisorJob())
         list.map { item ->

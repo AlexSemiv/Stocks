@@ -12,11 +12,12 @@ import kotlinx.android.synthetic.main.fragment_stocks.*
 @AndroidEntryPoint
 class SavedStocksFragment(
 ) : StockFragment(R.id.action_savedStocksFragment_to_informationStockFragment) {
-    override fun setLiveData() = viewModel.savedStocksLiveData
+    override fun setLiveData() = viewModel.savedLiveData
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // mechanism of deleting item from recyclerView and local database by swipe
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.UP or ItemTouchHelper.DOWN,
                 ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -33,6 +34,7 @@ class SavedStocksFragment(
                 }
             }
         }
+
         ItemTouchHelper(itemTouchHelperCallback).apply {
             attachToRecyclerView(recycler)
         }

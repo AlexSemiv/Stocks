@@ -4,9 +4,9 @@ import java.io.Serializable
 
 data class CompanyNewsResponseItem(
     val category: String,
-    val datetime: Float, // int
+    val datetime: Int,
     val headline: String,
-    val id: Float, // int
+    val id: Int,
     val image: String,
     val related: String,
     val source: String,

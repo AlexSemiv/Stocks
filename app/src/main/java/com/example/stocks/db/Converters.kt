@@ -7,6 +7,8 @@ import com.example.stocks.model.news.CompanyNewsResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+// converters needed to store a simple type of data in local database
+// in my case I transform all data to string(JSON)
 class ListNewsConverter {
     @TypeConverter
     fun fromNewsArrayList(list: CompanyNewsResponse): String{

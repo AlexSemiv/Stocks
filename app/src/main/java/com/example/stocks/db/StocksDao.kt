@@ -6,7 +6,7 @@ import androidx.room.*
 interface StocksDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertStock(stock: Stock): Long
+    suspend fun insertStock(stock: Stock)
 
     @Delete
     suspend fun deleteStock(stock: Stock)

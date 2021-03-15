@@ -17,21 +17,23 @@ import com.example.stocks.util.Resource
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_stocks.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class StockFragment(
+// class that needed for us to storing same logic for each of 3 fragments in one place (
+//      show recycler,
+//      click on stockItem
+// )
         private val navGraphAction: Int
 ): Fragment(R.layout.fragment_stocks) {
     lateinit var viewModel: StocksViewModel
-    lateinit var stocksAdapter: StocksAdapter
+    @Inject lateinit var stocksAdapter: StocksAdapter
 
     abstract fun setLiveData(): LiveData<Resource<List<Stock>>>
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         viewModel = (activity as StocksActivity).viewModel
-        stocksAdapter = StocksAdapter()
 
         recycler.apply {
             adapter = stocksAdapter

@@ -8,7 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class TopStocksFragment(
 ) : StockFragment(R.id.action_topStocksFragment_to_informationStockFragment) {
-    override fun setLiveData() = viewModel.topStocksLiveData
+    override fun setLiveData() = viewModel.topLiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

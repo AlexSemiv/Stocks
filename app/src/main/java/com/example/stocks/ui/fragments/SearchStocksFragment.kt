@@ -6,16 +6,14 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.SearchView
 import com.example.stocks.R
-import com.example.stocks.ui.StocksActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_stocks.*
 import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class SearchStocksFragment(
 ) : StockFragment(R.id.action_searchStocksFragment_to_informationStockFragment) {
-    override fun setLiveData() = viewModel.searchStocksLiveData
+    override fun setLiveData() = viewModel.searchLiveData
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -29,6 +27,7 @@ class SearchStocksFragment(
         val menuItem = menu.findItem(R.id.search)
         val searchView = menuItem?.actionView as SearchView
 
+        // mechanism of searching stocks by input query in searchView
         var searchJob: Job? = null
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {

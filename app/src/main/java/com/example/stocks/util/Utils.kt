@@ -6,9 +6,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.properties.Delegates
 
+// constants, simple functions
 class Utils {
     companion object{
         const val BASE_URL = "https://finnhub.io/api/v1/"
+        // must be store in local properties
         const val API_TOKEN = "c0l6e0f48v6orbr0rekg"
         const val DOW_JONES = "^DJI"
         const val CANDLE_RESOLUTION = "M"

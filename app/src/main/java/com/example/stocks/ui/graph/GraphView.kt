@@ -12,7 +12,7 @@ class GraphView(
         attributeSet: AttributeSet
 ): View(context,attributeSet) {
     private val dataSetOpen = mutableListOf<DataPoint>()
-    private val dataSetClose = mutableListOf<DataPoint>()
+    private val dataSetCurrent = mutableListOf<DataPoint>()
     private val dataSetHigh = mutableListOf<DataPoint>()
     private val dataSetLow = mutableListOf<DataPoint>()
 
@@ -22,7 +22,7 @@ class GraphView(
     private var yMax = 0
 
     private val dataOpenPointLinePaint = initPoint(Color.YELLOW)
-    private val dataClosePointLinePaint = initPoint(Color.BLUE)
+    private val dataCurrentPointLinePaint = initPoint(Color.BLUE)
     private val dataHighPointLinePaint = initPoint(Color.GREEN)
     private val dataLowPointLinePaint = initPoint(Color.RED)
     private fun initPoint(c: Int) = Paint().apply {
@@ -43,14 +43,14 @@ class GraphView(
         strokeWidth = 5f
     }
 
-    fun setDots(dataOpen:List<DataPoint>, dataClose:List<DataPoint>, dataLow:List<DataPoint>, dataHigh:List<DataPoint>) {
+    fun setDots(dataOpen:List<DataPoint>, dataCurrent:List<DataPoint>, dataLow:List<DataPoint>, dataHigh:List<DataPoint>) {
         dataSetOpen.clear()
         dataOpen.initMaxMinDots()
         dataSetOpen.addAll(dataOpen)
 
-        dataSetClose.clear()
-        dataClose.initMaxMinDots()
-        dataSetClose.addAll(dataClose)
+        dataSetCurrent.clear()
+        dataCurrent.initMaxMinDots()
+        dataSetCurrent.addAll(dataCurrent)
 
         dataSetLow.clear()
         dataLow.initMaxMinDots()
@@ -79,7 +79,7 @@ class GraphView(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.drawLine(dataSetOpen,dataOpenPointLinePaint)
-        canvas?.drawLine(dataSetClose, dataClosePointLinePaint)
+        canvas?.drawLine(dataSetCurrent, dataCurrentPointLinePaint)
         canvas?.drawLine(dataSetHigh,dataHighPointLinePaint)
         canvas?.drawLine(dataSetLow,dataLowPointLinePaint)
     }
