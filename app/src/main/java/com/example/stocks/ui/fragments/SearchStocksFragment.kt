@@ -15,6 +15,8 @@ class SearchStocksFragment(
 ) : StockFragment(R.id.action_searchStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.searchLiveData
 
+    private var searchJob: Job? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
@@ -28,7 +30,6 @@ class SearchStocksFragment(
         val searchView = menuItem?.actionView as SearchView
 
         // mechanism of searching stocks by input query in searchView
-        var searchJob: Job? = null
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchJob?.cancel()

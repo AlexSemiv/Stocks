@@ -26,12 +26,18 @@ fun changedPrice(view: TextView, changedPrice: Double) {
         val rounded = changedPrice.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
         view.text = str.apply {
             append("(")
-            if(rounded > 0.0){
-                append("+$rounded")
-                view.setTextColor(Color.GREEN)
-            } else {
-                append("$rounded")
-                view.setTextColor(Color.RED)
+            when {
+                rounded > 0.0 -> {
+                    append("+$rounded")
+                    view.setTextColor(Color.GREEN)
+                }
+                rounded < 0.0 -> {
+                    append("$rounded")
+                    view.setTextColor(Color.RED)
+                }
+                else -> {
+                    append("$rounded")
+                }
             }
             append("$)")
             toString()
