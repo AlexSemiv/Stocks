@@ -18,7 +18,7 @@ class StocksAdapter : RecyclerView.Adapter<StocksAdapter.StockViewHolder>() {
     ) : RecyclerView.ViewHolder(binding.root)
 
     private val differCallback = object : DiffUtil.ItemCallback<Stock>(){
-        override fun areItemsTheSame(oldItem: Stock, newItem: Stock) = oldItem.profile.ticker == newItem.profile.ticker
+        override fun areItemsTheSame(oldItem: Stock, newItem: Stock) = oldItem.profile2.ticker == newItem.profile2.ticker
 
         override fun areContentsTheSame(oldItem: Stock, newItem: Stock) = oldItem == newItem
     }
@@ -40,7 +40,7 @@ class StocksAdapter : RecyclerView.Adapter<StocksAdapter.StockViewHolder>() {
         holder.binding.stock = stock
         holder.itemView.apply {
             Glide.with(this)
-                    .load(stock.profile.logo)
+                    .load(stock.profile2.logo)
                     .override(500,500)
                     .fitCenter()
                     .error(R.drawable.ic_baseline_default_ticker_24)

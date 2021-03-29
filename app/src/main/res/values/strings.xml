@@ -3,4 +3,8 @@
     <string name="title_top_stocks">TOP-10</string>
     <string name="title_favorite_stocks">Saved</string>
     <string name="title_stocks_search">Search</string>
+    <string name="logo_of_company">Logo of company</string>
+    <string name="graph_1_year">Graph (1 year)</string>
+    <string name="title_news_resource">News</string>
+    <string name="no_fresh_news_for_last_week">No fresh news for last week</string>
 </resources>

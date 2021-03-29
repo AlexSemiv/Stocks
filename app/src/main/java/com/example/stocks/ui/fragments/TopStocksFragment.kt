@@ -6,12 +6,11 @@ import com.example.stocks.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TopStocksFragment(
-) : StockFragment(R.id.action_topStocksFragment_to_informationStockFragment) {
+) : StocksFragment(R.id.action_topStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.topLiveData
 
     private var updateJob: Job? = null

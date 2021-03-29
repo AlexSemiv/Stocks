@@ -1,5 +1,6 @@
 package com.example.stocks.ui.fragments
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -45,7 +46,7 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
 
         view.apply {
             Glide.with(this)
-                    .load(_stock.profile.logo)
+                    .load(_stock.profile2.logo)
                     .override(200,200)
                     .fitCenter()
                     .error(R.drawable.ic_baseline_default_ticker_24)
@@ -57,7 +58,15 @@ class InformationStockFragment : Fragment(R.layout.fragment_stock_information) {
             layoutManager = LinearLayoutManager(activity)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        newsAdapter.differ.submitList(_stock.news.toList())
+
+        val news = _stock.news.toList()
+        if(news.isNotEmpty()) {
+            tv_no_results_news.visibility = View.INVISIBLE
+            newsAdapter.differ.submitList(news)
+        } else {
+            tv_no_results_news.visibility = View.VISIBLE
+            newsAdapter.differ.submitList(listOf())
+        }
 
         newsAdapter.setOnItemCLickListener { news ->
             val bundle = Bundle().apply {

@@ -3,7 +3,7 @@ package com.example.stocks.model
 import androidx.room.PrimaryKey
 import java.io.Serializable
 
-data class CompanyProfileResponse(
+data class CompanyProfile2Response(
     val country: String,
     val currency: String,
     val exchange: String,

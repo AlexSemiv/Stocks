@@ -2,7 +2,7 @@ package com.example.stocks.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.stocks.db.SavedStockDatabase
+import com.example.stocks.db.SavedStocksDatabase
 import com.example.stocks.db.StocksDao
 import dagger.Module
 import dagger.Provides
@@ -17,13 +17,13 @@ object RoomModule {
 
     @Provides
     @Singleton
-    fun provideStockDatabase(@ApplicationContext context: Context): SavedStockDatabase = Room.databaseBuilder(
+    fun provideStockDatabase(@ApplicationContext context: Context): SavedStocksDatabase = Room.databaseBuilder(
             context.applicationContext,
-            SavedStockDatabase::class.java,
+            SavedStocksDatabase::class.java,
             "saved_stocks_db.db"
     ).build()
 
     @Provides
     @Singleton
-    fun provideStockDao(savedStockDatabase: SavedStockDatabase): StocksDao = savedStockDatabase.getStockDao()
+    fun provideStockDao(savedStocksDatabase: SavedStocksDatabase): StocksDao = savedStocksDatabase.getStockDao()
 }

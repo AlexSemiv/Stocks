@@ -5,7 +5,7 @@ import com.example.stocks.api.StocksApi
 import com.example.stocks.db.Stock
 import com.example.stocks.db.StocksDao
 import com.example.stocks.model.CandleResponse
-import com.example.stocks.model.CompanyProfileResponse
+import com.example.stocks.model.CompanyProfile2Response
 import com.example.stocks.model.DowJonesResponse
 import com.example.stocks.model.QuoteResponse
 import com.example.stocks.model.news.CompanyNewsResponse
@@ -27,7 +27,7 @@ class StocksRepository
                 api.searchStock(query)
             }
 
-    suspend fun getCompanyProfile2(symbol: String): CompanyProfileResponse? =
+    suspend fun getCompanyProfile2(symbol: String): CompanyProfile2Response? =
             handleApiRequest {
                 api.getCompanyProfile2(symbol)
             }

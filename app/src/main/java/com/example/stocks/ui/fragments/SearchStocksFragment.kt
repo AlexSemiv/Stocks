@@ -12,7 +12,7 @@ import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class SearchStocksFragment(
-) : StockFragment(R.id.action_searchStocksFragment_to_informationStockFragment) {
+) : StocksFragment(R.id.action_searchStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.searchLiveData
 
     private var searchJob: Job? = null

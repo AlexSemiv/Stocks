@@ -1,7 +1,7 @@
 package com.example.stocks.api
 
 import com.example.stocks.model.CandleResponse
-import com.example.stocks.model.CompanyProfileResponse
+import com.example.stocks.model.CompanyProfile2Response
 import com.example.stocks.model.DowJonesResponse
 import com.example.stocks.model.QuoteResponse
 import com.example.stocks.model.news.CompanyNewsResponse
@@ -29,7 +29,7 @@ interface StocksApi {
             symbol: String,
             @Query("token")
             token: String = API_TOKEN
-    ) : Response<CompanyProfileResponse>
+    ) : Response<CompanyProfile2Response>
 
     // get information about some stock's price
     @GET("quote")

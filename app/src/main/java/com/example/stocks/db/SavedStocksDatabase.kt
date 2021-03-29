@@ -13,7 +13,7 @@ import androidx.room.TypeConverters
         ListNewsConverter::class,
         CandleConverter::class
 )
-abstract class SavedStockDatabase: RoomDatabase() {
+abstract class SavedStocksDatabase: RoomDatabase() {
 
     abstract fun getStockDao(): StocksDao
 }

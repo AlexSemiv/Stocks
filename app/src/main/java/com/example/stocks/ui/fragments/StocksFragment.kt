@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.fragment_stocks.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-abstract class StockFragment(
+abstract class StocksFragment(
 // class that needed for us to storing same logic for each of 3 fragments in one place (
 //      show recycler,
 //      click on stockItem
@@ -63,6 +63,9 @@ abstract class StockFragment(
                     hideProgressBar()
                     response.error?.let { message ->
                         Snackbar.make(view,message,Snackbar.LENGTH_SHORT).show()
+                    }
+                    response.data?.let { listStocks ->
+                        stocksAdapter.differ.submitList(listStocks)
                     }
                 }
                 is Resource.Loading -> {

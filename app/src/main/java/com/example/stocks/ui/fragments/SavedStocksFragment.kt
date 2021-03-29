@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.fragment_stocks.*
 
 @AndroidEntryPoint
 class SavedStocksFragment(
-) : StockFragment(R.id.action_savedStocksFragment_to_informationStockFragment) {
+) : StocksFragment(R.id.action_savedStocksFragment_to_informationStockFragment) {
     override fun setLiveData() = viewModel.savedLiveData
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

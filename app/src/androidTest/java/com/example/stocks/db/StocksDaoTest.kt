@@ -1,13 +1,9 @@
  package com.example.stocks.db
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.example.stocks.HiltTestRunner
 import com.example.stocks.model.CandleResponse
-import com.example.stocks.model.CompanyProfileResponse
+import com.example.stocks.model.CompanyProfile2Response
 import com.example.stocks.model.QuoteResponse
 import com.example.stocks.model.news.CompanyNewsResponse
 import com.google.common.truth.Truth.assertThat
@@ -19,7 +15,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -37,7 +32,7 @@ class StocksDaoTest {
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Inject @Named("test_database")
-    lateinit var database: SavedStockDatabase
+    lateinit var database: SavedStocksDatabase
     private lateinit var dao: StocksDao
 
     @Before
@@ -54,7 +49,7 @@ class StocksDaoTest {
 
     @Test
     fun insertStock() = runBlockingTest {
-        val stock = Stock(CompanyProfileResponse("country", "currency", "exchange",
+        val stock = Stock(CompanyProfile2Response("country", "currency", "exchange",
                 "finn", "ipo", "logo", 0.0, "name",
                 "phone", 0.0, "ticker", "web"),
                 QuoteResponse(0.0, 0.0, 0.0, 0.0),
@@ -69,7 +64,7 @@ class StocksDaoTest {
 
     @Test
     fun deleteStock() = runBlockingTest {
-        val stock = Stock(CompanyProfileResponse("country", "currency", "exchange",
+        val stock = Stock(CompanyProfile2Response("country", "currency", "exchange",
                 "finn", "ipo", "logo", 0.0, "name",
                 "phone", 0.0, "ticker", "web"),
                 QuoteResponse(0.0, 0.0, 0.0, 0.0),
@@ -85,13 +80,13 @@ class StocksDaoTest {
 
     @Test
     fun deleteAllSavedStock() = runBlockingTest {
-        val stock1 = Stock(CompanyProfileResponse("country", "currency", "exchange",
+        val stock1 = Stock(CompanyProfile2Response("country", "currency", "exchange",
                 "finn", "ipo", "logo", 0.0, "name",
                 "phone", 0.0, "ticker1", "web"),
                 QuoteResponse(0.0, 0.0, 0.0, 0.0),
                 CompanyNewsResponse(),
                 CandleResponse(listOf(), listOf(), listOf(), listOf(), "s"))
-        val stock2 = Stock(CompanyProfileResponse("country", "currency", "exchange",
+        val stock2 = Stock(CompanyProfile2Response("country", "currency", "exchange",
                 "finn", "ipo", "logo", 0.0, "name",
                 "phone", 0.0, "ticker2", "web"),
                 QuoteResponse(0.0, 0.0, 0.0, 0.0),

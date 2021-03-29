@@ -23,7 +23,6 @@ import com.example.stocks.util.Utils.Companion.NEWS_FROM
 import com.example.stocks.util.Utils.Companion.NEWS_TO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,14 +49,16 @@ class StocksViewModel
     private fun getTopStocks(symbol: String) = viewModelScope.launch {
         topLiveData.initResponseLiveData {
             // pass a tickers list to init data for recycler in top-10Fragment
-            repository.getTopStocksTickers(symbol)?.constituents!!.subList(0, 10)
+            // subList() needed to reduce the risk of throwing an exception (ApiLimitException)
+            repository.getTopStocksTickers(symbol)?.constituents?.subList(0, 10) ?: listOf()
         }
     }
 
     fun searchStocks(query: String) = viewModelScope.launch {
         searchLiveData.initResponseLiveData {
             // pass a tickers list to init data for recycler in searchFragment
-            repository.searchStock(query)?.result!!.map { it.symbol }.subList(0, 10)
+            // subList() needed to reduce the risk of throwing an exception (ApiLimitException)
+            repository.searchStock(query)?.result?.map { it.symbol }?.subList(0, 10) ?: listOf()
         }
     }
 
@@ -72,42 +73,43 @@ class StocksViewModel
     // call from informationFragment to saving stock in local database
     fun saveStockToSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.insertStock(stock)
-        val updateStockList = repository.getAllSavedStocks()
-        savedLiveData.postValue(Resource.Success(updateStockList))
+        val updateStocksList = repository.getAllSavedStocks()
+        savedLiveData.postValue(Resource.Success(updateStocksList))
     }
 
     // call from savedFragment to deleting stock from local database
     fun deleteStockFromSavedFragment(stock: Stock) = viewModelScope.launch {
         repository.deleteStock(stock)
-        val updateStockList = repository.getAllSavedStocks()
-        savedLiveData.postValue(Resource.Success(updateStockList))
+        val updateStocksList = repository.getAllSavedStocks()
+        savedLiveData.postValue(Resource.Success(updateStocksList))
     }
 
     // utils
     // init liveData object by passing a func that return list of stocks (top/search)
-    private suspend fun MutableLiveData<Resource<List<Stock>>>.initResponseLiveData(getTickers: suspend () -> List<String>) {
+    private suspend fun MutableLiveData<Resource<List<Stock>>>.initResponseLiveData(getResponseTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
-        val stockList = mutableListOf<Stock>()
+        val stocksList = mutableListOf<Stock>()
         try {
             if (hasInternetConnection()) {
                 // get list of tickers
-                val tickers = getTickers.invoke()
+                val tickers = getResponseTickers.invoke()
                 if (tickers.isNotEmpty()) {
                     // init a data for recyclerView
-                    stockList.initStockList(tickers)
+                    stocksList.initStocksList(tickers)
+                }
+                // pass a data for recyclerView
+                if(stocksList.isNotEmpty()) {
+                    postValue(Resource.Success(stocksList))
+                } else {
+                    postValue(Resource.Error("No results.\nPlease try again later."))
                 }
             } else {
                 postValue(Resource.Error("No internet connection.\nPlease try again later."))
-                return
             }
-
-            // pass a data for recyclerView
-            postValue(Resource.Success(stockList))
         } catch (e: Throwable) {
             when(e){
-                is ApiLimitException -> postValue(Resource.Error(e.message!!))
-                is IOException -> postValue(Resource.Error(e.message!!))
-                else -> postValue(Resource.Error("Conversion Error.\nPlease try again later."))
+                is ApiLimitException -> postValue(Resource.Error(e.message!!, stocksList))
+                else -> postValue(Resource.Error("${e.message}.\nPlease try again later.", stocksList))
             }
         }
     }
@@ -115,27 +117,24 @@ class StocksViewModel
     // init liveData object by passing a func that return list of stocks (saved)
     private suspend fun MutableLiveData<Resource<List<Stock>>>.initSavedLiveData(getSavedTickers: suspend () -> List<String>) {
         postValue(Resource.Loading())
-        val stockList = mutableListOf<Stock>()
+        val stocksList = mutableListOf<Stock>()
         try {
             if (hasInternetConnection()) {
                 // get list of tickers
                 val tickers = getSavedTickers.invoke()
                 if (tickers.isNotEmpty()) {
                     // init a data for recyclerView (updating saved stocks)
-                    stockList.initStockList(tickers)
+                    stocksList.initStocksList(tickers)
+                }
+                // pass a data for recyclerView
+                postValue(Resource.Success(stocksList))
+                // updating data in local database
+                if(stocksList.isNotEmpty()) {
+                    repository.deleteAllSavedStocks()
+                    repository.insertAllStocks(stocksList)
                 }
             } else {
                 postValue(Resource.Success(repository.getAllSavedStocks()))
-                return
-            }
-
-            // pass a data for recyclerView
-            postValue(Resource.Success(stockList))
-
-            // updating data in local database
-            if(stockList.isNotEmpty()) {
-                repository.deleteAllSavedStocks()
-                repository.insertAllStocks(stockList)
             }
         } catch (e: Throwable) {
             postValue(Resource.Success(repository.getAllSavedStocks()))
@@ -143,35 +142,42 @@ class StocksViewModel
     }
 
     // init list of stocks for recyclerView
-    private suspend fun MutableList<Stock>.initStockList(list: List<String>) = supervisorScope {
-        val uiScope = CoroutineScope(SupervisorJob())
-        list.map { item ->
-            uiScope.async(Dispatchers.Main) {
-                val companyProfile2Response = async {
-                    repository.getCompanyProfile2(item)
-                }
-                val quoteResponse = async {
-                    repository.getQuote(item)
-                }
-                val newsResponse = async {
-                    repository.getCompanyNews(item, NEWS_FROM, NEWS_TO)
-                }
-                val candleResponse = async {
-                    repository.getCandle(item, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
-                }
+    private suspend fun MutableList<Stock>.initStocksList(tickers: List<String>)
+    {
+        supervisorScope {
+            val uiScope = CoroutineScope(SupervisorJob())
+            tickers.map { ticker ->
+                uiScope.async(Dispatchers.Main) {
+                    val companyProfile2Response = async {
+                        repository.getCompanyProfile2(ticker)
+                    }
+                    val quoteResponse = async {
+                        repository.getQuote(ticker)
+                    }
+                    val newsResponse = async {
+                        repository.getCompanyNews(ticker, NEWS_FROM, NEWS_TO)
+                    }
+                    val candleResponse = async {
+                        repository.getCandle(ticker, CANDLE_RESOLUTION, CANDLE_FROM, CANDLE_TO)
+                    }
 
-                val companyProfile2 = companyProfile2Response.await()
-                val quote = quoteResponse.await()
-                val news = newsResponse.await()
-                val candle = candleResponse.await()
+                    val companyProfile2 = companyProfile2Response.await()
+                    val quote = quoteResponse.await()
+                    val news = newsResponse.await()
+                    val candle = candleResponse.await()
 
-                if(companyProfile2 != null && quote != null && news != null && candle != null) {
-                    if(companyProfile2.ticker != "") {
-                        add(Stock(companyProfile2, quote, news, candle))
+                    if(companyProfile2 != null && quote != null && news != null && candle != null) {
+                        // "ticker" may be a nullable object received from response,
+                        // but in our case we can't have a nullable (val ticker: String?) "primary key" property
+                        if(companyProfile2.ticker != null) {
+                            if(companyProfile2.ticker.isNotEmpty()) {
+                                add(Stock(companyProfile2, quote, news, candle))
+                            }
+                        }
                     }
                 }
-            }
-        }.awaitAll()
+            }.awaitAll()
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -202,7 +208,6 @@ class StocksViewModel
                 }
             }
         }
-
         return false
     }
 }
